@@ -8,8 +8,15 @@ from streamlit_msal import Msal
 # repo with some modifications to the embedded React.js Code
 
 # For a deployed app, place these variables in an environment variable
-client_id = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
-tenant_id = "bbbbbbbb-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+#client_id = "ca67cffb-9893-4d3e-8ac7-6e2a5e126bee"
+#tenant_id = "3e0d2f7b-8d5d-44ff-9a55-490d31bbdfb9"
+
+client_id = "ca67cffb-9893-4d3e-8ac7-6e2a5e126bee"
+tenant_id = "3e0d2f7b-8d5d-44ff-9a55-490d31bbdfb9"
+
+
+# Define the Images logos path
+path = 'images/logos/'
 
 # Initialize the Msal object
 auth_data = Msal.initialize(
@@ -30,7 +37,7 @@ if st.button("Refresh Token"):
 if not auth_data:
     st.write("You are not signed in")
 else:
-    # Getting usefull information
+    # Getting useful information
     access_token = auth_data["accessToken"]
 
     account = auth_data["account"]
