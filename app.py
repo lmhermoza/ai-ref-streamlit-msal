@@ -15,12 +15,12 @@ import base64
 # For a deployed app, place these variables in an environment variable
 client_id = "ca67cffb-9893-4d3e-8ac7-6e2a5e126bee"
 #client_id = "b36caaf1-4542-46cf-bae3-db5d7e6a239e"
+#client_id = "3698ab63-4193-4be2-9545-3bccf40205ce"
 tenant_id = "3e0d2f7b-8d5d-44ff-9a55-490d31bbdfb9"
 
 
 # Define the Images logos path
 path = 'images/logos/'
-logo_url = 'MozaTech.png'  
 
 # Initialize the Msal object
 auth_data = Msal.initialize(
@@ -58,7 +58,7 @@ def get_user_photo(access_token):
 # Only show authentication buttons if user is not signed in
 if not auth_data:
     #st.write("Please sign in to access the portal")
-    st.title("Welcome to the Sales Analytics Portal")
+    st.title("Please sign in to access the portal")
     
     col1, col2 = st.columns(2)
     with col1:
@@ -75,48 +75,61 @@ else:
     user_info = get_user_info(access_token)
     user_photo = get_user_photo(access_token)
     
+    #Match company logo
+    logo_url = user_info.get('companyName') + ".png"  
+    
     with st.sidebar:
-        st.markdown("---")
-        st.subheader("👤 User Profile")
-        
-        # Display user photo
+        img = Image.open(path + logo_url)
+        st.image(img, caption="", use_container_width=True)
+        # Display user information
         if user_photo:
-            st.write(f"Hi {user_info.get('givenName', 'N/A')}")
             try:
                 img = Image.open(BytesIO(user_photo))
                 buffered = BytesIO()
                 img.save(buffered, format="PNG")
                 img_b64 = base64.b64encode(buffered.getvalue()).decode()
                 img_html = f"""
-                    <img src="data:image/png;base64,{img_b64}" 
-                        style="width:100px;height:100px;border-radius:50%;object-fit:cover;border:2px solid #ddd;" />
+                    <div style="text-align:center;">
+                        <img src="data:image/png;base64,{img_b64}" 
+                            style="width:100px;height:100px;border-radius:50%;object-fit:cover;border:2px solid #ddd;" />
+                        <br> <strong>{user_info.get('displayName', 'N/A')}</strong><br>
+                        {user_info.get('jobTitle', 'N/A')}<br>
+                        {user_info.get('companyName', 'N/A')}
+                    </div>
                 """
                 st.markdown(img_html, unsafe_allow_html=True)
+                                    
             except Exception as e:
                     st.write("📷 Photo unavailable")
         else:
             st.write("📷 No photo available")
-            
-        st.write("**Account Options**")
-        if st.button("Sign out"):
-            Msal.sign_out() # Clears auth_data
         
-        if st.button("Refresh Token"):
-            Msal.revalidate() # refresh the accessToken
+        st.write("")
+        
+        # Create two columns and place the buttons
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            if st.button("Sign out"):
+                Msal.sign_out() # Triggers sign-out process and reruns the app  
+        with col2:
+            if st.button("Refresh"):
+                Msal.revalidate() # Triggers sign-out process and reruns the app 
 
 def display_user_info(user_info, logo_url):
-    """Display user information and organization logo."""
-    st.title("Welcome to " + user_info.get('companyName') + " Sales Analytics")
+    """Display user information and organization Name in the Title."""
+    st.title(user_info.get('companyName') + " Sales Analytics")
+    
+    #Trying Pages inside the Main Page:
+
     
     col1, col2 = st.columns([2, 1])
     
     with col1:
-        st.subheader("User Details")
-        st.write(f"**Name:** {user_info.get('displayName', 'N/A')}")
-        st.write(f"**Job Title:** {user_info.get('jobTitle', 'N/A')}")
-        st.write(f"**Email:** {user_info.get('mail', user_info.get('userPrincipalName', 'N/A'))}")
+        #st.write(f"**Name:** {user_info.get('displayName', 'N/A')}")
+        #st.write(f"**Job Title:** {user_info.get('jobTitle', 'N/A')}")
+        #st.write(f"**Email:** {user_info.get('mail', user_info.get('userPrincipalName', 'N/A'))}")
         #   st.write(f"**Organization:** {user_info.get('companyName', 'N/A')}")
-    
+        st.write("")
     with col2:
         if logo_url:
             try:
@@ -125,9 +138,8 @@ def display_user_info(user_info, logo_url):
                 if os.path.exists(path + logo_url):
                     st.subheader("")
                     #img = Image.open(path + logo_url)
-                    img = Image.open(path + "MozaTech.png")
-                    st.image(img, caption="", use_container_width=True)
-                    st.write(f"**Location:** {user_info.get('officeLocation', 'N/A')}, {user_info.get('state', 'N/A')}")
+                    #img = Image.open(path + "MozaTech.png")
+                    #st.image(img, caption="", use_container_width=True)                    
                 else:
                     st.error(f"Local logo file not found: {logo_url}")
             except Exception as e:
@@ -136,7 +148,7 @@ def display_user_info(user_info, logo_url):
         else:
             st.info("No logo available for your organization")
 
-
+#Probably can delete all these lines below:
 if not auth_data:
     st.write("")
 else:
